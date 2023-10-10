@@ -372,20 +372,50 @@ determine <strong>the main differences between how casual members use
 Cyclistic versus annual members</strong> so that the Cyclistic marketing
 department can understand these differences and market annual
 memberships to these casual customers effectively.</p>
-<div id="the-data" class="section level3">
-<h3>The Data</h3>
-<p>Cyclistic data sets are available [here]{<a href="https://divvy-tripdata.s3.amazonaws.com/index.html" class="uri">https://divvy-tripdata.s3.amazonaws.com/index.html</a>}.
-that was used for this analysis is trip data from June 2022 - July 2023.
-Each month was in its own file so it was all merged into one table.</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00</code></pre>
 </div>
+<div id="the-data" class="section level2">
+<h2>The Data</h2>
+<p>Cyclistic data sets for analysis are available <a href="https://divvy-tripdata.s3.amazonaws.com/index.html">here</a>,
+mainly organized as one file per month. I chose to examine one year of
+data, from July 2022 - 2023 to get the most recent insights on
+riders.</p>
+<div id="available-information" class="section level3">
+<h3>Available Information</h3>
+<p>The data sets include information such as: - Electric vs. Classic
+Bike - Start and End times of the rides - Starting and Ending locations
+(station, latitude, longitude) - Membership Type</p>
+</div>
+<div id="limitations" class="section level3">
+<h3>Limitations</h3>
+<ul>
+<li>We cannot attach the different trips to members beyond their
+membership type. Therefore, we cannot tell how frequently an individual
+rider is utilizing the service. It would have been great to be able to
+look at how frequently a casual member uses the service compared to an
+annual member.</li>
+<li>There are many instances where station information is missing.
+However, starting latitudes and longitudes are available, so we can
+determine distance traveled based on those calculations.</li>
+</ul>
+</div>
+</div>
+<div id="method" class="section level2">
+<h2>Method</h2>
+<ol style="list-style-type: decimal">
+<li>The data sets were combined into one CSV file.</li>
+</ol>
+<pre class="r"><code>library(readr)
+cyclistic &lt;- read_csv(&quot;C:/Users/salim/Dropbox/Ismail/GWG-Data-Analysis-Capstone-Projects/Cyclistic Trip Data/combined_data.csv&quot;)</code></pre>
+<pre><code>## Rows: 6547094 Columns: 13
+## -- Column specification --------------------------------------------------------
+## Delimiter: &quot;,&quot;
+## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
+## dbl  (4): start_lat, start_lng, end_lat, end_lng
+## dttm (2): started_at, ended_at
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>View(cyclistic)</code></pre>
 </div>
 <div id="including-plots" class="section level2">
 <h2>Including Plots</h2>

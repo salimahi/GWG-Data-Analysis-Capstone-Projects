@@ -16,12 +16,27 @@ Cyclistic is a fictional bike-share company in Chicago who has several pricing p
 ## The Task
 Cyclistic believes that there is a growth opportunity in converting casual riders into full Cyclistic members. This analysis aims to determine **the main differences between how casual members use Cyclistic versus annual members** so that the Cyclistic marketing department can understand these differences and market annual memberships to these casual customers effectively. 
 
-### The Data
+## The Data
 Cyclistic data sets for analysis are available [here](https://divvy-tripdata.s3.amazonaws.com/index.html), mainly organized as one file per month. I chose to examine one year of data, from July 2022 - 2023 to get the most recent insights on riders.  
 
+### Available Information
+The data sets include information such as: 
+- Electric vs. Classic Bike
+- Start and End times of the rides
+- Starting and Ending locations (station, latitude, longitude)
+- Membership Type
 
-```{r cars}
-summary(cars)
+### Limitations
+- We cannot attach the different trips to members beyond their membership type. Therefore, we cannot tell how frequently an individual rider is utilizing the service.  It would have been great to be able to look at how frequently a casual member uses the service compared to an annual member. 
+- There are many instances where station information is missing. However, starting latitudes and longitudes are available, so we can determine distance traveled based on those calculations. 
+
+## Method
+
+1. The data sets were combined into one CSV file. 
+```{r cyclistic, echo=FALSE}
+library(readr)
+cyclistic <- read_csv("C:/Users/salim/Dropbox/Ismail/GWG-Data-Analysis-Capstone-Projects/Cyclistic Trip Data/combined_data.csv")
+View(cyclistic)
 ```
 
 ## Including Plots
