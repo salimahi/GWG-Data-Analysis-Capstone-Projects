@@ -2,11 +2,14 @@
 title: "Case Study 1 - Cyclistic Marketing"
 author: "Salimah Ismail"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(geosphere)
 ```
 
 # Case Study 1: How Does a Bike-Share Navigate Speedy Success?
@@ -32,19 +35,84 @@ The data sets include information such as:
 
 ## Method
 
-1. The data sets were combined into one CSV file. 
-```{r cyclistic, echo=FALSE}
+**1. The data sets were combined into one CSV file.** 
+```{r import-file-and-libraries, echo=FALSE}
 library(readr)
+library(geosphere)
+library(dplyr)
+library(ggplot2)
 cyclistic <- read_csv("C:/Users/salim/Dropbox/Ismail/GWG-Data-Analysis-Capstone-Projects/Cyclistic Trip Data/combined_data.csv")
-View(cyclistic)
+```
+**2. Some additional columns were added to the data frame including:** 
+- Ride length, by calculating the difference between the start and end time
+- Day of the week the ride occurred
+- Month that the ride occurred
+- Ride distance, by calculating the difference between the starting and ending latitude and longitudes. 
+
+```{r add-columns, echo=FALSE}
+cyclistic$ride_length <- difftime(cyclistic$ended_at, cyclistic$started_at, units = c("mins"))
+cyclistic$ride_day <- format(as.Date(cyclistic$started_at), "%A")
+cyclistic$ride_month_year <- format(as.Date(cyclistic$started_at), "%m-%Y")
+
+cyclistic <- cyclistic %>% rowwise() %>% mutate(ride_distance = distHaversine(c(start_lng, start_lat), c(end_lng, end_lat)))
+```
+**3. Some rides that had errors in it were discarded, such as ones with negative times travelled even though the distance was significant.* **
+
+```{r filter-data, echo=FALSE}
+cyclistic_v2 <- cyclistic %>% filter(ride_length >=0, ride_distance != 0)
+cyclistic_v2$ride_day<- ordered(cyclistic_v2$ride_day, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+View(cyclistic_v2)
 ```
 
-## Including Plots
+**4. Summary statistics were calculated and relevant obeservations grouped by Casual and Annual members were visualized such as:**
 
-You can also embed plots, for example:
+*Ride Length Comparisons*
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r boxplot-ride-length, echo=FALSE}
+ggplot(cyclistic_v2, aes(x=member_casual, y=ride_length, fill=member_casual)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(-10, 100)) +
+  labs(title="Comparing Ride Lengths Between Member Types", x="Member Type", y="Ride Length (mins)", fill="Member Type") 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+*Distance Comparisons*
+
+```{r boxplot-distance-length, echo=FALSE}
+#Distance
+ggplot(cyclistic_v2, aes(x=member_casual, y=ride_distance, fill=member_casual)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(-10, 10000)) +
+  labs(title="Comparing Ride Distances Between Member Types", x="Member Type", y="Ride Length (mins)", fill="Member Type") 
+
+```
+
+*Bike Type Usage Comparisons:*
+
+```{r bar-chart-bike-type, echo=FALSE}
+cyclistic_v2 %>% 
+  group_by(member_casual, rideable_type) %>% 
+  summarise(number_of_rides = n(), .groups = "drop") %>% 
+  ggplot(aes(x = member_casual, y = number_of_rides, fill = rideable_type)) + 
+  geom_col(position = "stack") +
+  labs(title = "Bike Types Used Compared Between Casual and Annual Members", x = "Member Type", y = "Number of Rides", fill = "Bike Type")
+```
+
+*Bike Day Usage Comparisons:*
+
+```{r histogram-bike-day, echo=FALSE}
+cyclistic_v2 %>% 
+  group_by(member_casual, ride_day) %>% 
+  summarise(number_of_rides = n(), .groups = "drop") %>% 
+  ggplot(aes(x = ride_day, y = number_of_rides, fill = member_casual)) + 
+  geom_col(position = "dodge") +
+  labs(title = "Riding Days Compared Between Casual and Annual Members", x = "Day of The Week", y = "Number of Rides", fill = "Member Type")
+
+```
+
+
+
+## Conclusions 
+- Casual Members, on average, seem to use the bikes for *longer periods of time* than Annual Members. 
+- Casual Members, on average, seem to travel about the *same* distance as Annual members. 
+- Casual Members seem to *prefer electric bikes* proportionally more than Annual Members. 
+- Casual Members tend to use the service *in high volumes on weekends* as compared to Annual Members whose higher usage occur on weekdays. 
