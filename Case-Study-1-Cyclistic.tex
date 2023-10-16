@@ -1,0 +1,216 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Case Study 1 - Cyclistic Marketing},
+  pdfauthor={Salimah Ismail},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Case Study 1 - Cyclistic Marketing}
+\author{Salimah Ismail}
+\date{2023-10-12}
+
+\begin{document}
+\maketitle
+
+\hypertarget{case-study-1-how-does-a-bike-share-navigate-speedy-success}{%
+\section{Case Study 1: How Does a Bike-Share Navigate Speedy
+Success?}\label{case-study-1-how-does-a-bike-share-navigate-speedy-success}}
+
+Cyclistic is a fictional bike-share company in Chicago who has several
+pricing plans: single ride passes, full-day passes and annual
+memberships. Customers who purchase single rides or full-day passes are
+considered casual members, whereas those who have annual memberships are
+considered Cyclistic members.
+
+\hypertarget{the-task}{%
+\subsection{The Task}\label{the-task}}
+
+Cyclistic believes that there is a growth opportunity in converting
+casual riders into full Cyclistic members. This analysis aims to
+determine \textbf{the main differences between how casual members use
+Cyclistic versus annual members} so that the Cyclistic marketing
+department can understand these differences and market annual
+memberships to these casual customers effectively.
+
+\hypertarget{the-data}{%
+\subsection{The Data}\label{the-data}}
+
+Cyclistic data sets for analysis are available
+\href{https://divvy-tripdata.s3.amazonaws.com/index.html}{here}, mainly
+organized as one file per month. I chose to examine one year of data,
+from July 2022 - 2023 to get the most recent insights on riders.
+
+\hypertarget{available-information}{%
+\subsubsection{Available Information}\label{available-information}}
+
+The data sets include information such as: - Electric vs.~Classic Bike -
+Start and End times of the rides - Starting and Ending locations
+(station, latitude, longitude) - Membership Type
+
+\hypertarget{limitations}{%
+\subsubsection{Limitations}\label{limitations}}
+
+\begin{itemize}
+\tightlist
+\item
+  We cannot attach the different trips to members beyond their
+  membership type. Therefore, we cannot tell how frequently an
+  individual rider is utilizing the service. It would have been great to
+  be able to look at how frequently a casual member uses the service
+  compared to an annual member.
+\item
+  There are many instances where station information is missing.
+  However, starting latitudes and longitudes are available, so we can
+  determine distance traveled based on those calculations.
+\end{itemize}
+
+\hypertarget{method}{%
+\subsection{Method}\label{method}}
+
+\textbf{1. The data sets were combined into one CSV file.}
+
+\begin{verbatim}
+## 
+## Attaching package: 'dplyr'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+\end{verbatim}
+
+\begin{verbatim}
+## Rows: 6547094 Columns: 13
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr  (7): ride_id, rideable_type, start_station_name, start_station_id, end_...
+## dbl  (4): start_lat, start_lng, end_lat, end_lng
+## dttm (2): started_at, ended_at
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\textbf{2. Some additional columns were added to the data frame
+including:} - Ride length, by calculating the difference between the
+start and end time - Day of the week the ride occurred - Month that the
+ride occurred - Ride distance, by calculating the difference between the
+starting and ending latitude and longitudes.
+
+\textbf{3. Some rides that had errors in it were discarded, such as ones
+with negative times travelled even though the distance was significant.*
+}
+
+\textbf{4. Summary statistics were calculated and relevant obeservations
+grouped by Casual and Annual members were visualized such as:}
+
+\emph{Ride Length Comparisons}
+
+\begin{verbatim}
+## Don't know how to automatically pick scale for object of type <difftime>.
+## Defaulting to continuous.
+\end{verbatim}
+
+\includegraphics{Case-Study-1-Cyclistic_files/figure-latex/boxplot-ride-length-1.pdf}
+
+\emph{Distance Comparisons}
+
+\includegraphics{Case-Study-1-Cyclistic_files/figure-latex/boxplot-distance-length-1.pdf}
+
+\emph{Bike Type Usage Comparisons:}
+
+\includegraphics{Case-Study-1-Cyclistic_files/figure-latex/bar-chart-bike-type-1.pdf}
+
+\emph{Bike Day Usage Comparisons:}
+
+\includegraphics{Case-Study-1-Cyclistic_files/figure-latex/histogram-bike-day-1.pdf}
+
+\hypertarget{conclusions}{%
+\subsection{Conclusions}\label{conclusions}}
+
+\begin{itemize}
+\tightlist
+\item
+  Casual Members, on average, seem to use the bikes for \emph{longer
+  periods of time} than Annual Members.
+\item
+  Casual Members, on average, seem to travel about the \emph{same}
+  distance as Annual members.
+\item
+  Casual Members seem to \emph{prefer electric bikes} proportionally
+  more than Annual Members.
+\item
+  Casual Members tend to use the service \emph{in high volumes on
+  weekends} as compared to Annual Members whose higher usage occur on
+  weekdays.
+\end{itemize}
+
+\end{document}
