@@ -1,0 +1,100 @@
+---
+title: "Case-Study-2-Wellness-Tracker"
+author: "Salimah Ismail"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+```
+
+# Case Study #2 How Can a Wellness Technology Company Play It Smart?
+
+Bellabeat is a tech company that manufactures health-focus smart products targeted towards women. This includes health tracker bracelets and clip-ons. Bellabeat wants to understand how consumers use non-Bellabeat smart devices to reveal opportunities for more growth. 
+
+## The Task
+Determine how customers use non-Bellabeat devices and notice any trends. 
+
+## The Data 
+The dataset offered by the Grow With Google Case Study is a [Kaggle data set](https://www.kaggle.com/datasets/arashnic/fitbit) that contains personal fitness tracker data from thirty Fitbit users.  
+
+### Available Information
+Information examined from the data set includes:
+
+* Steps
+* Distances
+* Activity Level of Distances
+* Active Minutes
+* Calories
+* Sleep Data
+
+### Limitations
+Thirty participants is a fairly small sample, especially since they are self-selected and there does not seem to be any ability to determine how closely the participants resemble Bellabeat's target demographic.   
+
+```{r load-dataset, echo=FALSE, results='hide', message=FALSE}
+daily_activity <- read_csv("C:/Users/salim/Dropbox/Ismail/GWG-Data-Analysis-Capstone-Projects/Fitness Data/dailyActivity_merged.csv")
+sleep <- read_csv("C:/Users/salim/Dropbox/Ismail/GWG-Data-Analysis-Capstone-Projects/Fitness Data/sleepDay_merged.csv")
+```
+
+## Method
+**1. Create a new table that has the average steps, distance, activity and sleep data for each individual.**
+```{r new-table, echo=FALSE}
+avg_asleep <- sleep %>% group_by(Id) %>% summarize(avg_sleep=mean(TotalMinutesAsleep))
+
+avg_activity <- daily_activity %>% group_by(Id) %>% summarise(avg_steps=mean(TotalSteps), avg_dist=mean(TotalDistance),  avg_vad=mean(VeryActiveDistance), avg_mad=mean(ModeratelyActiveDistance), avg_lad=mean(LightActiveDistance), avg_sad=mean(SedentaryActiveDistance),avg_vam=mean(VeryActiveMinutes), avg_fam=mean(FairlyActiveMinutes), avg_lam=mean(LightlyActiveMinutes), avg_sm=mean(SedentaryMinutes),avg_cal=mean(Calories)) 
+
+ind_summary <- left_join(avg_activity, avg_asleep, by='Id')
+```
+```{r View-table}
+head(ind_summary)
+```
+
+**2. Visualize the results to see trends** 
+
+```{r avg-steps, echo=FALSE, message=FALSE}
+ggplot(ind_summary, aes(x=avg_steps)) + geom_histogram(fill='steelblue') + labs(title="Distribution of Individuals Average Daily Steps", x="Number of Steps", y="Count of Individuals")
+```
+
+```{r avg-distance-traveled, echo=FALSE, message=FALSE}
+melt_distance <- melt(ind_summary, id.vars = c("Id", "avg_steps", "avg_dist", "avg_vam", "avg_fam", "avg_lam", "avg_sm", "avg_cal", "avg_sleep"), variable.name="Distance_Type", value.name = "Distance_Amount")
+
+melt_distance %>% 
+  group_by(Id, Distance_Type) %>%
+  ggplot(aes(x=reorder(factor(Id), Distance_Amount), y=Distance_Amount, fill=Distance_Type)) + geom_col(position="stack") +
+  labs(title="Average Distance Traveled By Individual", x="Individuals", y="Distance (miles)") +  
+  scale_fill_manual(name="Types of Distance", labels=c("Very Active Distance", "Moderately Active Distance", "Lightly Active Distance", "Sedentary Distance"), values = c("#F8766D", "burlywood", "khaki", "chartreuse"))
+
+```
+
+```{r avg-active-minutes, echo=FALSE, message=FALSE}
+melt_active_mins <- melt(ind_summary, id.vars = c("Id", "avg_steps", "avg_dist", "avg_vad", "avg_mad", "avg_lad", "avg_sad", "avg_cal", "avg_sleep"), variable.name="Active_Type", value.name = "Active_Minutes")
+
+melt_active_mins %>% 
+  group_by(Id, Active_Type) %>%
+  ggplot(aes(x=reorder(factor(Id), Active_Minutes), y=Active_Minutes, fill=Active_Type)) + geom_col(position="stack") +
+  labs(title="Average Active Miuntes By Individual", x="Individuals", y="Active Minutes") +  
+  scale_fill_manual(name="Types of Active Minutes", labels=c("Very Active", "Moderately Active", "Lightly Active", "Sedentary"), values = c("#F8766D", "burlywood", "khaki", "chartreuse"))
+```
+```{r calories, echo=FALSE, message=FALSE}
+ggplot(ind_summary, aes(x=avg_cal)) + geom_histogram(fill='seagreen') + labs(title="Distribution of Individuals Average Daily Calories", x="Calories", y="Count of Individuals")
+```
+
+```{r sleep, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(ind_summary, aes(x=avg_sleep)) + geom_histogram(fill='#9933ff') + labs(title="Distribution of Individuals Average Daily Sleep Time", x="Sleep Time (Mins)", y="Count of Individuals")
+```
+
+
+
+# Conclusions
+
+* There seems to be an apporximate normal distribution of average steps per day with the mean being around 7500 steps/day.
+* When individuals are traversing distances, they are either lightly active or very active - i.e. there is not much time spent in moderate activity levels. 
+* All individuals spend most of their day sedentary and most of their activity in the 'lightly active' zone. We can also see that more than half of individuals do not have all their active minutes tracked daily.
+* 75% of individuals are burning at least 2000/calories a day on average. 
+* Most individuals sleep between 5 - 7 hours a night. 
