@@ -1,0 +1,88 @@
+---
+title: "Case-Study-3-Prison-Banned-Books"
+author: "Salimah Ismail"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(wordcloud2)
+library(RColorBrewer)
+library(wordcloud2)
+library(tm)
+```
+
+## Case Study #3 Books Banned in State Prisons (2022)
+
+This [data set from The Marshall Project](https://observablehq.com/@themarshallproject/prison-banned-books) was shared from the [Data is Plural](https://www.data-is-plural.com/archive/2023-01-04-edition/) website. As prison systems in the United States are infamously known for their preference for punishment over rehabilitation, understanding more about the banned books would be enlightening to the preferences and biases of the country.   
+
+## The Task
+Look at trends around banned books in prisions in the United States and identify any common trends or important outliers. 
+
+## Available Information
+Information from examined from this data set include:
+
+* Title of the Book
+* Author
+* Month / Year the book was banned 
+* Justification for banning the book 
+* State postal code
+
+### Limitations
+Information is not provided by all states and many states omit to share a reason why the book was banned. Information on Authors is also limited.    
+
+```{r load-dataset, echo=FALSE, results='hide', message=FALSE}
+books <- read_csv("C:/Users/salim/Dropbox/Ismail/GWG-Data-Analysis-Capstone-Projects/Banned Books Data/banned_book_data_combined_lists.csv")
+```
+
+## Visualizations
+
+*Years when Book Banning Occurred*
+```{r year-banned, echo=FALSE, warning=FALSE}
+books %>% 
+  group_by(year, state_arc) %>% 
+  summarise(number_of_books = n(), .groups = "drop") %>% 
+  ggplot(aes(x = year, y = number_of_books, fill = state_arc)) + 
+  geom_col(position = "stack") +
+  coord_cartesian(xlim = c(1990, 2022)) +
+  labs(title = "Number of Prison Banned Books by Year", x = "Year", y = "Number of Books", fill = "State") +
+  scale_fill_manual(name="State", labels=c("Arizona", "California", "Connecticut", "Florida", "Georgia", "Iowa", "Illinois","Kansas", "Michigan", "Missouri", "Montana", "North Carolina","Rhode Island", "Texas", "Wisconsin"), values = c("#1f77b4","#aec7e8","#ff7f0e","#ffbb78","#2ca02c","#98df8a","#d62728","#ff9896","#9467bd","#c5b0d5","#8c564b","#c49c94","#e377c2","#17becf","#7f7f7f"))
+```
+
+
+
+*Wordcloud of Book Titles*
+
+```{r wordcloud-titles, echo=FALSE}
+title <- books$publication
+title_corpus <- Corpus(VectorSource(title)) 
+
+title_corpus <- title_corpus %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace)
+
+title_corpus <- tm_map(title_corpus, content_transformer(tolower))
+title_corpus <- tm_map(title_corpus, removeWords, stopwords("english"))
+
+dtm <- TermDocumentMatrix(title_corpus)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing=TRUE)
+df <- data.frame(word = names(words), freq=words)
+
+set.seed(1234) # for reproducibility 
+
+wordcloud(words = df$word, freq = df$freq, min.freq = 200,
+max.words=200, random.order=FALSE, rot.per=0.10, colors=brewer.pal(8, "Dark2"))
+title(main="Wordcloud of Prison Banned Books Titles*\n\n", sub="*Words that appear at least 200 times.")
+
+```
+
+
+[Tableau](https://public.tableau.com/app/profile/salimah.ismail/viz/Case-Study-3-Prison-Banned-Books/Sheet1?publish=yes)
